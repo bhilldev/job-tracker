@@ -1,6 +1,20 @@
 @JobTracker.API_HostAddress = http://localhost:5226
 
-GET {{JobTracker.API_HostAddress}}/weatherforecast/
+POST {{JobTracker.API_HostAddress}}/api/JobApplications
+Content-Type: application/json
+Accept: application/json
+
+{
+  "companyName": "Example Company",
+  "jobTitle": "Software Engineer",
+  "status": 1,
+  "notes": "Applied through the company website.",
+  "jobPostingUrl": "https://example.com/jobs/software-engineer"
+}
+
+###
+
+GET {{JobTracker.API_HostAddress}}/api/JobApplications/1
 Accept: application/json
 
 ###
