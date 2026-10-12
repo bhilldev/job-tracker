@@ -31,6 +31,14 @@ public class JobApplicationsController : ControllerBase
             result);
     }
 
+    [HttpGet]
+    public async Task<ActionResult<List<JobApplicationResponse>>> GetJobApplications()
+    {
+        var applications = await _service.GetAllAsync();
+
+        return Ok(applications);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<JobApplicationResponse>> GetJobApplicationById(int id)
     {

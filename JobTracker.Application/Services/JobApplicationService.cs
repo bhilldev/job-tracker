@@ -22,7 +22,7 @@ public class JobApplicationService
             JobTitle = request.JobTitle,
             Status = request.Status,
             AppliedAt = request.AppliedAt != default
-                ? request.AppliedAt
+                ? request.AppliedAt.ToUniversalTime()
                 : DateTimeOffset.UtcNow,
             Notes = request.Notes,
             JobPostingUrl = request.JobPostingUrl
@@ -62,5 +62,24 @@ public class JobApplicationService
             Notes = entity.Notes,
             JobPostingUrl = entity.JobPostingUrl
         };
+    }
+
+    public async Task<List<JobApplicationResponse>> GetAllAsync()
+    {
+        return await _context.JobApplications
+            .AsNoTracking()
+            .OrderByDescending(application => application.AppliedAt)
+            .ThenByDescending(application => application.Id)
+            .Select(application => new JobApplicationResponse
+            {
+                Id = application.Id,
+                CompanyName = application.CompanyName,
+                JobTitle = application.JobTitle,
+                Status = application.Status,
+                AppliedAt = application.AppliedAt,
+                Notes = application.Notes,
+                JobPostingUrl = application.JobPostingUrl
+            })
+            .ToListAsync();
     }
 }

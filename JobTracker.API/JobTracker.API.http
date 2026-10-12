@@ -18,3 +18,8 @@ GET {{JobTracker.API_HostAddress}}/api/JobApplications/1
 Accept: application/json
 
 ###
+
+GET {{JobTracker.API_HostAddress}}/api/JobApplications
+Accept: application/json
+
+###
