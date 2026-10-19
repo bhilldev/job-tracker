@@ -20,48 +20,25 @@ struct JobApplicationsView: View {
             VStack(alignment: .leading) {
                 VStack(alignment: .leading){
                     Text("Your next chapter".uppercased())
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(
                             Color("PrimaryText")
                         )
                     Text("Job Tracker")
-                        .font(.system(size: 30, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(
                             Color("PrimaryText")
                         )
                     Text("A little clarity in your job search")
-                        .font(.system(size: 13, weight: .regular))
+                        .font(.system(size: 15, weight: .regular))
                         .foregroundStyle(
                             Color("PrimaryText")
                         )
                 }
                 .padding()
-                List(applications) { application in
-                    VStack(alignment: .leading) {
-                        Text(application.companyName)
-                        Text(application.jobTitle)
-                    }
-                    .listRowBackground(Color("AccentGreen"))
-                }
-                .scrollContentBackground(.hidden)
-                .overlay {
-                    if let errorMessage {
-                        Text(errorMessage)
-                    }
-                }
-                .task {
-                    if let previewApplications {
-                        applications = previewApplications
-                        return
-                    }
-                    
-                    do {
-                        applications = try await JobApplicationAPIService()
-                            .fetchJobApplications()
-                    } catch {
-                        errorMessage = error.localizedDescription
-                    }
-                }
+                
+                ApplicationsTrackedCard(numOfApps: applications.count)
+                    .padding(.horizontal)
             }
         }
     }
