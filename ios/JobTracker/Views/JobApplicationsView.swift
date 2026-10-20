@@ -12,12 +12,20 @@ struct JobApplicationsView: View {
 
     @State private var applications: [JobApplicationDTO] = []
     @State private var errorMessage: String?
+    
+    private var interviewingCount: Int {
+        applications.filter { $0.status == .interviewing }.count
+    }
+
+    private var offerCount: Int {
+        applications.filter { $0.status == .offer }.count
+    }
 
     var body: some View {
         ZStack {
             Color("ScreenBackground")
                 .ignoresSafeArea()
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading){
                     Text("Your next chapter".uppercased())
                         .font(.system(size: 14, weight: .semibold))
@@ -34,11 +42,41 @@ struct JobApplicationsView: View {
                         .foregroundStyle(
                             Color("PrimaryText")
                         )
+                    
                 }
-                .padding()
+                .padding(.vertical)
+                
                 
                 ApplicationsTrackedCard(numOfApps: applications.count)
-                    .padding(.horizontal)
+
+                HStack(spacing: 12) {
+                    StatusSummaryCard(
+                        count: interviewingCount,
+                        title: "Interviewing",
+                        icon: "bubble.left.and.bubble.right"
+                    )
+
+                    StatusSummaryCard(
+                        count: offerCount,
+                        title: "Offer",
+                        icon: "sparkles"
+                    )
+                }
+                
+            }
+            .padding(.horizontal)
+        }
+        .task {
+            if let previewApplications {
+                applications = previewApplications
+                return
+            }
+
+            do {
+                applications = try await JobApplicationAPIService()
+                    .fetchJobApplications()
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
     }
