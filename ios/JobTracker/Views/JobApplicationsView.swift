@@ -25,46 +25,56 @@ struct JobApplicationsView: View {
         ZStack {
             Color("ScreenBackground")
                 .ignoresSafeArea()
-            VStack(alignment: .leading, spacing: 14) {
-                VStack(alignment: .leading){
-                    Text("Your next chapter".uppercased())
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(
-                            Color("PrimaryText")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading){
+                        Text("Your next chapter".uppercased())
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(
+                                Color("PrimaryText")
+                            )
+                        Text("Job Tracker")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundStyle(
+                                Color("PrimaryText")
+                            )
+                        Text("A little clarity in your job search")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundStyle(
+                                Color("PrimaryText")
+                            )
+                        
+                    }
+                    .padding(.vertical)
+                    
+                    
+                    ApplicationsTrackedCard(numOfApps: applications.count)
+
+                    HStack(spacing: 12) {
+                        StatusSummaryCard(
+                            count: interviewingCount,
+                            title: "Interviewing",
+                            icon: "bubble.left.and.bubble.right"
                         )
-                    Text("Job Tracker")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(
-                            Color("PrimaryText")
+
+                        StatusSummaryCard(
+                            count: offerCount,
+                            title: "Offer",
+                            icon: "sparkles"
                         )
-                    Text("A little clarity in your job search")
-                        .font(.system(size: 15, weight: .regular))
-                        .foregroundStyle(
-                            Color("PrimaryText")
-                        )
+                    }
+                    Text("Recently applied")
+                        .font(.headline)
+                        .foregroundStyle(Color("PrimaryText"))
+
+                    ForEach(applications) { application in
+                        JobApplicationsCard(application: application)
+                    }
                     
                 }
-                .padding(.vertical)
-                
-                
-                ApplicationsTrackedCard(numOfApps: applications.count)
-
-                HStack(spacing: 12) {
-                    StatusSummaryCard(
-                        count: interviewingCount,
-                        title: "Interviewing",
-                        icon: "bubble.left.and.bubble.right"
-                    )
-
-                    StatusSummaryCard(
-                        count: offerCount,
-                        title: "Offer",
-                        icon: "sparkles"
-                    )
-                }
-                
+                .padding(.horizontal)
+                .padding(.bottom)
             }
-            .padding(.horizontal)
         }
         .task {
             if let previewApplications {
