@@ -24,7 +24,7 @@ struct StatusSummaryCard: View {
 
             Text(title)
                 .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color("SecondaryText"))
         }
         .padding(17)
         .frame(maxWidth: .infinity, alignment: .leading)

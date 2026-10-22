@@ -1,126 +1,62 @@
 //
-//  SwiftUIView.swift
+//  JobApplicationsView.swift
 //  JobTracker
 //
-//  Created by Brandon Hill on 10/15/26.
+//  Created by Brandon Hill on 10/22/26.
 //
 
 import SwiftUI
 
 struct JobApplicationsView: View {
-    var previewApplications: [JobApplicationDTO]? = nil
-
-    @State private var applications: [JobApplicationDTO] = []
-    @State private var errorMessage: String?
-    
-    private var interviewingCount: Int {
-        applications.filter { $0.status == .interviewing }.count
-    }
-
-    private var offerCount: Int {
-        applications.filter { $0.status == .offer }.count
-    }
-
+    @State private var searchText = ""
     var body: some View {
         ZStack {
             Color("ScreenBackground")
                 .ignoresSafeArea()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    VStack(alignment: .leading){
-                        Text("Your next chapter".uppercased())
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(
-                                Color("PrimaryText")
-                            )
-                        Text("Job Tracker")
-                            .font(.system(size: 34, weight: .bold))
-                            .foregroundStyle(
-                                Color("PrimaryText")
-                            )
-                        Text("A little clarity in your job search")
-                            .font(.system(size: 15, weight: .regular))
-                            .foregroundStyle(
-                                Color("PrimaryText")
-                            )
-                        
-                    }
-                    .padding(.vertical)
-                    
-                    
-                    ApplicationsTrackedCard(numOfApps: applications.count)
 
-                    HStack(spacing: 12) {
-                        StatusSummaryCard(
-                            count: interviewingCount,
-                            title: "Interviewing",
-                            icon: "bubble.left.and.bubble.right"
-                        )
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Your Opportunities".uppercased())
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(
+                        Color("SecondaryText")
+                    )
+                Text("Applications")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(
+                        Color("PrimaryText")
+                    )
+                Text("Keep your next move in sight.")
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(
+                        Color("SecondaryText")
+                    )
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(Color("SecondaryText"))
 
-                        StatusSummaryCard(
-                            count: offerCount,
-                            title: "Offer",
-                            icon: "sparkles"
-                        )
-                    }
-                    Text("Recently applied")
-                        .font(.headline)
-                        .foregroundStyle(Color("PrimaryText"))
-
-                    ForEach(applications) { application in
-                        JobApplicationsCard(application: application)
-                    }
-                    
+                    TextField(
+                        "",
+                        text: $searchText,
+                        prompt: Text("Company or role")
+                            .foregroundStyle(Color("SecondaryText"))
+                    )
+                    .foregroundStyle(Color("PrimaryText"))
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                 }
-                .padding(.horizontal)
-                .padding(.bottom)
+                .font(.system(size: 16))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color("CardBackground"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.top, 14)
             }
-        }
-        .task {
-            if let previewApplications {
-                applications = previewApplications
-                return
-            }
-
-            do {
-                applications = try await JobApplicationAPIService()
-                    .fetchJobApplications()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
         }
     }
 }
+
 #Preview {
-    NavigationStack {
-        JobApplicationsView(previewApplications: [
-            JobApplicationDTO(
-                id: 1,
-                companyName: "Maple Labs",
-                jobTitle: "iOS Developer",
-                notes: "Applied through the company website.",
-                status: .applied,
-                appliedAt: .now,
-                jobPostingUrl: nil
-            ),
-            JobApplicationDTO(
-                id: 2,
-                companyName: "Northstar Software",
-                jobTitle: "Software Engineer",
-                notes: "Interview scheduled for next week.",
-                status: .interviewing,
-                appliedAt: .now,
-                jobPostingUrl: nil
-            ),
-            JobApplicationDTO(
-                id: 3,
-                companyName: "Cedar Health",
-                jobTitle: "Junior Swift Developer",
-                notes: nil,
-                status: .offer,
-                appliedAt: .now,
-                jobPostingUrl: nil
-            )
-        ])
-    }
+    JobApplicationsView()
 }
