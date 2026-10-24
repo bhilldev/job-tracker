@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct JobApplicationsView: View {
+    
     @State private var searchText = ""
+    let store: JobApplicationsStore
     var body: some View {
         ZStack {
             Color("ScreenBackground")
@@ -50,6 +52,9 @@ struct JobApplicationsView: View {
                 .background(Color("CardBackground"))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .padding(.top, 14)
+                ForEach(store.applications) { application in
+                    JobApplicationsCard(application: application)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
@@ -58,5 +63,5 @@ struct JobApplicationsView: View {
 }
 
 #Preview {
-    JobApplicationsView()
+    JobApplicationsView(store: JobApplicationsStore())
 }

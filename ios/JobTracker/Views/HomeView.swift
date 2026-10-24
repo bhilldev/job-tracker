@@ -10,15 +10,14 @@ import SwiftUI
 struct HomeView: View {
     var previewApplications: [JobApplicationDTO]? = nil
 
-    @State private var applications: [JobApplicationDTO] = []
-    @State private var errorMessage: String?
+    let store: JobApplicationsStore
     
     private var interviewingCount: Int {
-        applications.filter { $0.status == .interviewing }.count
+        store.applications.filter { $0.status == .interviewing }.count
     }
 
     private var offerCount: Int {
-        applications.filter { $0.status == .offer }.count
+        store.applications.filter { $0.status == .offer }.count
     }
 
     var body: some View {
@@ -48,7 +47,7 @@ struct HomeView: View {
                     .padding(.vertical)
                     
                     
-                    ApplicationsTrackedCard(numOfApps: applications.count)
+                    ApplicationsTrackedCard(numOfApps: store.applications.count)
 
                     HStack(spacing: 12) {
                         StatusSummaryCard(
@@ -67,7 +66,7 @@ struct HomeView: View {
                         .font(.headline)
                         .foregroundStyle(Color("PrimaryText"))
 
-                    ForEach(applications) { application in
+                    ForEach(store.applications) { application in
                         JobApplicationsCard(application: application)
                     }
                     
@@ -76,51 +75,40 @@ struct HomeView: View {
                 .padding(.bottom)
             }
         }
-        .task {
-            if let previewApplications {
-                applications = previewApplications
-                return
-            }
-
-            do {
-                applications = try await JobApplicationAPIService()
-                    .fetchJobApplications()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
     }
 }
 #Preview {
-    NavigationStack {
-        HomeView(previewApplications: [
-            JobApplicationDTO(
-                id: 1,
-                companyName: "Maple Labs",
-                jobTitle: "iOS Developer",
-                notes: "Applied through the company website.",
-                status: .applied,
-                appliedAt: .now,
-                jobPostingUrl: nil
-            ),
-            JobApplicationDTO(
-                id: 2,
-                companyName: "Northstar Software",
-                jobTitle: "Software Engineer",
-                notes: "Interview scheduled for next week.",
-                status: .interviewing,
-                appliedAt: .now,
-                jobPostingUrl: nil
-            ),
-            JobApplicationDTO(
-                id: 3,
-                companyName: "Cedar Health",
-                jobTitle: "Junior Swift Developer",
-                notes: nil,
-                status: .offer,
-                appliedAt: .now,
-                jobPostingUrl: nil
-            )
-        ])
-    }
+    let store = JobApplicationsStore()
+
+    store.applications = [
+        JobApplicationDTO(
+            id: 1,
+            companyName: "Maple Labs",
+            jobTitle: "iOS Developer",
+            notes: nil,
+            status: .applied,
+            appliedAt: .now,
+            jobPostingUrl: nil
+        ),
+        JobApplicationDTO(
+            id: 2,
+            companyName: "Northstar Software",
+            jobTitle: "Software Engineer",
+            notes: nil,
+            status: .interviewing,
+            appliedAt: .now,
+            jobPostingUrl: nil
+        ),
+        JobApplicationDTO(
+            id: 3,
+            companyName: "Cedar Health",
+            jobTitle: "Junior Swift Developer",
+            notes: nil,
+            status: .offer,
+            appliedAt: .now,
+            jobPostingUrl: nil
+        )
+    ]
+
+    return HomeView(store: store)
 }
