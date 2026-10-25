@@ -11,6 +11,8 @@ struct HomeView: View {
     var previewApplications: [JobApplicationDTO]? = nil
 
     let store: JobApplicationsStore
+    // ContentView supplies the action that selects the Applications tab.
+    let onViewApplications: () -> Void
     
     private var interviewingCount: Int {
         store.applications.filter { $0.status == .interviewing }.count
@@ -47,7 +49,11 @@ struct HomeView: View {
                     .padding(.vertical)
                     
                     
-                    ApplicationsTrackedCard(numOfApps: store.applications.count)
+                    // Forward the navigation action to the card without giving it tab state.
+                    ApplicationsTrackedCard(
+                        numOfApps: store.applications.count,
+                        onViewApplications: onViewApplications
+                    )
 
                     HStack(spacing: 12) {
                         StatusSummaryCard(
@@ -110,5 +116,6 @@ struct HomeView: View {
         )
     ]
 
-    return HomeView(store: store)
+    // This standalone preview has no tab container, so its navigation action does nothing.
+    return HomeView(store: store, onViewApplications: {})
 }

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ApplicationsTrackedCard: View {
     let numOfApps: Int
+    // Let the parent decide how to navigate when the user taps the card's button.
+    let onViewApplications: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -26,7 +28,8 @@ struct ApplicationsTrackedCard: View {
                 .padding(.top, 12)
 
             Button {
-                // Navigate to the applications screen
+                // Call the action passed down from ContentView through HomeView.
+                onViewApplications()
             } label: {
                 HStack {
                     Text("View applications")
@@ -51,5 +54,6 @@ struct ApplicationsTrackedCard: View {
 }
 
 #Preview {
-    ApplicationsTrackedCard(numOfApps: 4)
+    // No tab switching is needed when previewing the card by itself.
+    ApplicationsTrackedCard(numOfApps: 4, onViewApplications: {})
 }
