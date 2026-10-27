@@ -9,8 +9,27 @@ import SwiftUI
 
 struct JobApplicationsView: View {
     
+    @State private var selectedStatus: ApplicationStatusDTO? = nil
+
+    private var filteredApplications: [JobApplicationDTO] {
+        store.applications
+            .filter { application in
+                guard let selectedStatus else { return true }
+                return application.status == selectedStatus
+            }
+            .sorted { $0.appliedAt > $1.appliedAt }
+    }
+    
     @State private var searchText = ""
+    
     let store: JobApplicationsStore
+    
+    private var sortedApplications: [JobApplicationDTO] {
+        store.applications.sorted {
+            $0.appliedAt > $1.appliedAt
+        }
+    }
+    
     var body: some View {
         ZStack {
             Color("ScreenBackground")
@@ -53,7 +72,10 @@ struct JobApplicationsView: View {
                     .background(Color("CardBackground"))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(.top, 14)
-                    ForEach(store.applications) { application in
+                    ApplicationStatusFilters(selectedStatus: $selectedStatus)
+                        .padding(.top, 14)
+
+                    ForEach(filteredApplications) { application in
                         JobApplicationsCard(application: application)
                     }
                 }
