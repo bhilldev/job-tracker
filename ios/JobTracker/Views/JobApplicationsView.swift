@@ -8,26 +8,26 @@
 import SwiftUI
 
 struct JobApplicationsView: View {
-    
+    let store: JobApplicationsStore
+
     @State private var selectedStatus: ApplicationStatusDTO? = nil
+    @State private var searchText = ""
 
     private var filteredApplications: [JobApplicationDTO] {
-        store.applications
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return store.applications
             .filter { application in
-                guard let selectedStatus else { return true }
-                return application.status == selectedStatus
+                let matchesStatus = selectedStatus == nil
+                    || application.status == selectedStatus
+
+                let matchesSearch = query.isEmpty
+                    || application.companyName.localizedCaseInsensitiveContains(query)
+                    || application.jobTitle.localizedCaseInsensitiveContains(query)
+
+                return matchesStatus && matchesSearch
             }
             .sorted { $0.appliedAt > $1.appliedAt }
-    }
-    
-    @State private var searchText = ""
-    
-    let store: JobApplicationsStore
-    
-    private var sortedApplications: [JobApplicationDTO] {
-        store.applications.sorted {
-            $0.appliedAt > $1.appliedAt
-        }
     }
     
     var body: some View {
