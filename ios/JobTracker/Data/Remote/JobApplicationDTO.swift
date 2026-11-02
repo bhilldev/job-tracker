@@ -16,7 +16,7 @@ struct JobApplicationDTO: Decodable, Identifiable {
     let jobPostingUrl: String?
 }
 
-enum ApplicationStatusDTO: Int, Decodable {
+enum ApplicationStatusDTO: Int, Codable {
     case draft = 0
     case applied = 1
     case phoneScreen = 2
