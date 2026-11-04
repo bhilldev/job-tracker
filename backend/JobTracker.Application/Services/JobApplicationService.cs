@@ -18,6 +18,7 @@ public class JobApplicationService
     {
         var entity = new JobApplication
         {
+            UserId = 1,
             CompanyName = request.CompanyName,
             JobTitle = request.JobTitle,
             Status = request.Status,

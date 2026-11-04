@@ -13,25 +13,38 @@ import Observation
 class JobApplicationsStore {
     var applications: [JobApplicationDTO] = []
     var isLoading = false
+    var isSaving = false
     var errorMessage: String?
 
     private let apiService = JobApplicationAPIService()
-    
+
     func loadJobApplications() async {
         isLoading = true
         errorMessage = nil
-        
+
         defer {
             isLoading = false
         }
-        
+
         do {
             applications = try await apiService.fetchJobApplications()
         } catch {
             errorMessage = error.localizedDescription
         }
-        
+
     }
+
+    func createJobApplication(
+        request: CreateJobApplicationRequest
+    ) async throws {
+        isSaving = true
+        errorMessage = nil
+        defer { isSaving = false }
+
+        let application = try await apiService.createJobApplication(request: request)
+        applications.append(application)
+    }
+
 }
 
 

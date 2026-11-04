@@ -6,24 +6,57 @@
 //
 import Foundation
 
-enum JobAPIError: Error {
+enum JobAPIError: LocalizedError {
     case invalidResponse
     case httpError(statusCode: Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidResponse:
+            return "The server returned an invalid response."
+        case .httpError(let statusCode):
+            return "The server could not complete the request (HTTP \(statusCode))."
+        }
+    }
 }
 
 struct JobApplicationAPIService {
+    private let applicationsURL = URL(string: "http://localhost:5226/api/JobApplications")!
+
     func fetchJobApplications() async throws -> [JobApplicationDTO] {
-        let url = URL(string: "http://localhost:5226/api/JobApplications")!
-        let (data, response) = try await URLSession.shared.data(from: url)
-        
+        let (data, response) = try await URLSession.shared.data(from: applicationsURL)
+        try validate(response)
+        return try makeDecoder().decode([JobApplicationDTO].self, from: data)
+    }
+
+    func createJobApplication(
+        request: CreateJobApplicationRequest
+    ) async throws -> JobApplicationDTO {
+        var urlRequest = URLRequest(url: applicationsURL)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        urlRequest.httpBody = try encoder.encode(request)
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        try validate(response)
+        return try makeDecoder().decode(JobApplicationDTO.self, from: data)
+    }
+
+    private func validate(_ response: URLResponse) throws {
         guard let response = response as? HTTPURLResponse else {
             throw JobAPIError.invalidResponse
         }
-        
+
         guard (200..<300).contains(response.statusCode) else {
             throw JobAPIError.httpError(statusCode: response.statusCode)
         }
-        
+    }
+
+    // Fetch and create return the same timestamp format, with or without fractions.
+    private func makeDecoder() -> JSONDecoder {
         let decoder = JSONDecoder()
 
         decoder.dateDecodingStrategy = .custom { decoder in
@@ -53,6 +86,6 @@ struct JobApplicationAPIService {
             )
         }
 
-        return try decoder.decode([JobApplicationDTO].self, from: data)
+        return decoder
     }
 }

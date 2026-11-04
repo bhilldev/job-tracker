@@ -12,6 +12,7 @@ struct JobApplicationsView: View {
 
     @State private var selectedStatus: ApplicationStatusDTO? = nil
     @State private var searchText = ""
+    @State private var showingAddApplication = false
 
     private var filteredApplications: [JobApplicationDTO] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -42,11 +43,21 @@ struct JobApplicationsView: View {
                         .foregroundStyle(
                             Color("SecondaryText")
                         )
-                    Text("Applications")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(
-                            Color("PrimaryText")
-                        )
+                    HStack {
+                        Text("Applications")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundStyle(
+                                Color("PrimaryText")
+                            )
+                        Spacer()
+                        Button("Add application", systemImage: "plus") {
+                            showingAddApplication = true
+                        }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color("AccentGreen"))
+                        .disabled(store.isSaving)
+                    }
                     Text("Keep your next move in sight.")
                         .font(.system(size: 15, weight: .regular))
                         .foregroundStyle(
@@ -82,6 +93,12 @@ struct JobApplicationsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
             }
+        }
+        .sheet(isPresented: $showingAddApplication) {
+            NavigationStack {
+                AddJobApplicationView(store: store)
+            }
+            .preferredColorScheme(.dark)
         }
     }
 }

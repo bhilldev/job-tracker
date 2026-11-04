@@ -8,12 +8,21 @@
 import SwiftUI
 
 struct AddJobApplicationView: View {
+    let store: JobApplicationsStore
+    @Environment(\.dismiss) private var dismiss
+
     @State private var companyText = ""
     @State private var jobDescriptionText = ""
-    @State private var applicationStatus = ""
-    // Preview-only progress state; nothing is saved or sent to the backend.
-    @State private var progress = 0.0
-    @State private var isProgressEditable = false
+    @State private var errorMessage: String?
+
+    private var trimmedCompany: String {
+        companyText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedRole: String {
+        jobDescriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var body: some View {
         ZStack {
             Color("ScreenBackground")
@@ -38,6 +47,7 @@ struct AddJobApplicationView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .modifier(ApplicationTextFieldModifier())
+
                 } header: {
                     Text("Application details")
                         .font(.subheadline.weight(.semibold))
@@ -47,29 +57,66 @@ struct AddJobApplicationView: View {
                 .listRowBackground(Color("CardBackground"))
                 .listRowSeparatorTint(Color("SecondaryText").opacity(0.2))
                 .listRowInsets(EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16))
+                .disabled(store.isSaving)
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                    }
+                    .listRowBackground(Color("CardBackground"))
+                }
 
                 Section {
-                    Toggle("Allow editing", isOn: $isProgressEditable)
-                        .foregroundStyle(Color("PrimaryText"))
+                    Button {
+                        let request = CreateJobApplicationRequest(
+                            companyName: trimmedCompany,
+                            jobTitle: trimmedRole,
+                            status: .applied,
+                            appliedAt: nil,
+                            notes: nil,
+                            jobPostingUrl: nil
+                        )
 
-                    ApplicationProgressSlider(
-                        progress: $progress,
-                        isEditable: isProgressEditable
-                    )
-                    .listRowInsets(EdgeInsets())
-                } header: {
-                    Text("Application progress")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color("SecondaryText"))
+                        Task {
+                            errorMessage = nil
+
+                            do {
+                                try await store.createJobApplication(request: request)
+                                dismiss()
+                            } catch {
+                                errorMessage = error.localizedDescription
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            if store.isSaving {
+                                ProgressView()
+                            }
+                            Text(store.isSaving ? "Saving…" : "Save application")
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(trimmedCompany.isEmpty || trimmedRole.isEmpty || store.isSaving)
                 }
                 .listRowBackground(Color("CardBackground"))
-                .listRowSeparatorTint(Color("SecondaryText").opacity(0.2))
             }
             .formStyle(.grouped)
             // Reveal the app's background instead of the Form's default background.
             .scrollContentBackground(.hidden)
             .tint(Color("AccentGreen"))
         }
+        .navigationTitle("Add application")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+                    .disabled(store.isSaving)
+            }
+        }
+        // Keep the form available until the server confirms the save or returns an error.
+        .interactiveDismissDisabled(store.isSaving)
     }
 }
 
@@ -85,6 +132,8 @@ private struct ApplicationTextFieldModifier: ViewModifier {
 }
 
 #Preview {
-    AddJobApplicationView()
-        .preferredColorScheme(.dark)
+    NavigationStack {
+        AddJobApplicationView(store: JobApplicationsStore())
+    }
+    .preferredColorScheme(.dark)
 }
