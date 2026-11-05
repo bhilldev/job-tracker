@@ -8,49 +8,65 @@ namespace JobTracker.API.Controllers;
 [Route("api/[controller]")]
 public class JobApplicationsController : ControllerBase
 {
-    private readonly JobApplicationService _service;
-    private readonly ILogger<JobApplicationsController> _logger;
+  private readonly JobApplicationService _service;
+  private readonly ILogger<JobApplicationsController> _logger;
 
-    public JobApplicationsController(
-        JobApplicationService service,
-        ILogger<JobApplicationsController> logger)
+  public JobApplicationsController(
+      JobApplicationService service,
+      ILogger<JobApplicationsController> logger)
+  {
+    _service = service;
+    _logger = logger;
+  }
+
+  [HttpPost]
+  public async Task<ActionResult<JobApplicationResponse>> CreateJobApplication(
+      CreateJobApplicationRequest request)
+  {
+    var result = await _service.CreateAsync(request);
+
+    return CreatedAtAction(
+        nameof(GetJobApplicationById),
+        new { id = result.Id },
+        result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<List<JobApplicationResponse>>> GetJobApplications()
+  {
+    var applications = await _service.GetAllAsync();
+
+    return Ok(applications);
+  }
+
+  [HttpGet("{id:int}")]
+  public async Task<ActionResult<JobApplicationResponse>> GetJobApplicationById(int id)
+  {
+    var result = await _service.GetByIdAsync(id);
+
+    if (result == null)
     {
-        _service = service;
-        _logger = logger;
+      _logger.LogWarning("Job application with ID {Id} was not found.", id);
+
+      return NotFound();
     }
 
-    [HttpPost]
-    public async Task<ActionResult<JobApplicationResponse>> CreateJobApplication(
-        CreateJobApplicationRequest request)
-    {
-        var result = await _service.CreateAsync(request);
+    return Ok(result);
+  }
 
-        return CreatedAtAction(
-            nameof(GetJobApplicationById),
-            new { id = result.Id },
-            result);
+  [HttpDelete("{id:int}")]
+  public async Task<IActionResult> DeleteJobApplication(int id)
+  {
+    // Temporary development user; match the ID used when creating.
+    var userId = 1;
+
+    var deleted = await _service.DeleteAsync(id, userId);
+
+    if (!deleted)
+    {
+      return NotFound();
     }
 
-    [HttpGet]
-    public async Task<ActionResult<List<JobApplicationResponse>>> GetJobApplications()
-    {
-        var applications = await _service.GetAllAsync();
-
-        return Ok(applications);
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<JobApplicationResponse>> GetJobApplicationById(int id)
-    {
-        var result = await _service.GetByIdAsync(id);
-
-        if (result == null)
-        {
-            _logger.LogWarning("Job application with ID {Id} was not found.", id);
-
-            return NotFound();
-        }
-
-        return Ok(result);
-    }
+    return NoContent();
+  }
 }

@@ -18,6 +18,7 @@ public class JobApplicationService
     {
         var entity = new JobApplication
         {
+            // Temporary development user; match the delete endpoint.
             UserId = 1,
             CompanyName = request.CompanyName,
             JobTitle = request.JobTitle,
@@ -82,5 +83,21 @@ public class JobApplicationService
                 JobPostingUrl = application.JobPostingUrl
             })
             .ToListAsync();
+    }
+
+    public async Task<bool> DeleteAsync(int id, int userId)
+    {
+        var application = await _context.JobApplications
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (application == null)
+        {
+            return false;
+        }
+
+        _context.JobApplications.Remove(application);
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 }
