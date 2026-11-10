@@ -13,6 +13,8 @@ struct JobApplicationsView: View {
     @State private var selectedStatus: ApplicationStatusDTO? = nil
     @State private var searchText = ""
     @State private var showingAddApplication = false
+    @State private var applicationToDelete: JobApplicationDTO?
+    @State private var showingDeleteConfirmation = false
 
     private var filteredApplications: [JobApplicationDTO] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -29,6 +31,14 @@ struct JobApplicationsView: View {
                 return matchesStatus && matchesSearch
             }
             .sorted { $0.appliedAt > $1.appliedAt }
+    }
+    
+    private func deleteJobApplication(id: Int) async {
+        do {
+            try await store.deleteJobApplication(id: id)
+        } catch {
+            store.errorMessage = error.localizedDescription
+        }
     }
     
     var body: some View {
@@ -88,6 +98,14 @@ struct JobApplicationsView: View {
 
                     ForEach(filteredApplications) { application in
                         JobApplicationsCard(application: application)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    applicationToDelete = application
+                                    showingDeleteConfirmation = true
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,6 +117,28 @@ struct JobApplicationsView: View {
                 AddJobApplicationView(store: store)
             }
             .preferredColorScheme(.dark)
+        }
+        .alert(
+            "Delete application?",
+            isPresented: $showingDeleteConfirmation
+        ) {
+            Button("Delete", role: .destructive) {
+                guard let applicationToDelete else { return }
+                let id = applicationToDelete.id
+                self.applicationToDelete = nil
+
+                Task {
+                    await deleteJobApplication(id: id)
+                }
+            }
+
+            Button("Cancel", role: .cancel) {
+                applicationToDelete = nil
+            }
+        } message: {
+            Text(
+                "Are you sure you want to delete \(applicationToDelete?.companyName ?? "this application")? This cannot be undone."
+            )
         }
     }
 }

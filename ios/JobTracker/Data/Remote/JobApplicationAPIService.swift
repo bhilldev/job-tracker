@@ -44,6 +44,15 @@ struct JobApplicationAPIService {
         try validate(response)
         return try makeDecoder().decode(JobApplicationDTO.self, from: data)
     }
+    func deleteJobApplication(id: Int) async throws {
+        let url = applicationsURL.appendingPathComponent(String(id))
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "DELETE"
+
+        let (_, response) = try await URLSession.shared.data(for: urlRequest)
+        try validate(response)
+    }
 
     private func validate(_ response: URLResponse) throws {
         guard let response = response as? HTTPURLResponse else {

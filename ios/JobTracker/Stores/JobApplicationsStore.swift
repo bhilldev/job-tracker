@@ -44,7 +44,21 @@ class JobApplicationsStore {
         let application = try await apiService.createJobApplication(request: request)
         applications.append(application)
     }
+    
+    func deleteJobApplication(id: Int) async throws {
+        isSaving = true
+        errorMessage = nil
 
+        defer {
+            isSaving = false
+        }
+
+        try await apiService.deleteJobApplication(id: id)
+
+        applications.removeAll { application in
+            application.id == id
+        }
+    }
 }
 
 
