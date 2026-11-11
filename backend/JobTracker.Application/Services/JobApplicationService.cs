@@ -85,6 +85,42 @@ public class JobApplicationService
             .ToListAsync();
     }
 
+    public async Task<JobApplicationResponse?> UpdateAsync(
+        int id,
+        int userId,
+        UpdateJobApplicationRequest request)
+    {
+        var application = await _context.JobApplications
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (application == null)
+        {
+            return null;
+        }
+
+        application.CompanyName = request.CompanyName;
+        application.JobTitle = request.JobTitle;
+        application.Status = request.Status;
+        application.AppliedAt = request.AppliedAt != default
+            ? request.AppliedAt.ToUniversalTime()
+            : application.AppliedAt;
+        application.Notes = request.Notes;
+        application.JobPostingUrl = request.JobPostingUrl;
+
+        await _context.SaveChangesAsync();
+
+        return new JobApplicationResponse
+        {
+            Id = application.Id,
+            CompanyName = application.CompanyName,
+            JobTitle = application.JobTitle,
+            Status = application.Status,
+            AppliedAt = application.AppliedAt,
+            Notes = application.Notes,
+            JobPostingUrl = application.JobPostingUrl
+        };
+    }
+
     public async Task<bool> DeleteAsync(int id, int userId)
     {
         var application = await _context.JobApplications

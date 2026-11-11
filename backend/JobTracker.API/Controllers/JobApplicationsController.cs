@@ -54,6 +54,24 @@ public class JobApplicationsController : ControllerBase
     return Ok(result);
   }
 
+  [HttpPut("{id:int}")]
+  public async Task<ActionResult<JobApplicationResponse>> UpdateJobApplication(
+      int id,
+      UpdateJobApplicationRequest request)
+  {
+    // Temporary development user; match the IDs used by create and delete.
+    var userId = 1;
+
+    var result = await _service.UpdateAsync(id, userId, request);
+
+    if (result == null)
+    {
+      return NotFound();
+    }
+
+    return Ok(result);
+  }
+
   [HttpDelete("{id:int}")]
   public async Task<IActionResult> DeleteJobApplication(int id)
   {
