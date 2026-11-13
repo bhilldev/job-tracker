@@ -44,6 +44,26 @@ struct JobApplicationAPIService {
         try validate(response)
         return try makeDecoder().decode(JobApplicationDTO.self, from: data)
     }
+
+    func updateJobApplication(
+        id: Int,
+        request: UpdateJobApplicationRequest
+    ) async throws -> JobApplicationDTO {
+        let url = applicationsURL.appendingPathComponent(String(id))
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "PUT"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        urlRequest.httpBody = try encoder.encode(request)
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        try validate(response)
+        return try makeDecoder().decode(JobApplicationDTO.self, from: data)
+    }
+
     func deleteJobApplication(id: Int) async throws {
         let url = applicationsURL.appendingPathComponent(String(id))
 

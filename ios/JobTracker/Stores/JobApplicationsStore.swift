@@ -44,6 +44,25 @@ class JobApplicationsStore {
         let application = try await apiService.createJobApplication(request: request)
         applications.append(application)
     }
+
+    func updateJobApplication(
+        id: Int,
+        request: UpdateJobApplicationRequest
+    ) async throws {
+        isSaving = true
+        defer { isSaving = false }
+
+        let updatedApplication = try await apiService.updateJobApplication(
+            id: id,
+            request: request
+        )
+
+        guard let index = applications.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
+        applications[index] = updatedApplication
+    }
     
     func deleteJobApplication(id: Int) async throws {
         isSaving = true

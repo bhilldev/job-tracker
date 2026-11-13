@@ -15,6 +15,7 @@ struct JobApplicationsView: View {
     @State private var showingAddApplication = false
     @State private var applicationToDelete: JobApplicationDTO?
     @State private var showingDeleteConfirmation = false
+    @State private var applicationToEdit: JobApplicationDTO?
 
     private var filteredApplications: [JobApplicationDTO] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -98,6 +99,9 @@ struct JobApplicationsView: View {
 
                     ForEach(filteredApplications) { application in
                         JobApplicationsCard(application: application)
+                            .onTapGesture {
+                                applicationToEdit = application
+                            }
                             .swipeActions {
                                 Button(role: .destructive) {
                                     applicationToDelete = application
@@ -117,6 +121,14 @@ struct JobApplicationsView: View {
                 AddJobApplicationView(store: store)
             }
             .preferredColorScheme(.dark)
+        }
+        .sheet(item: $applicationToEdit) { application in
+            NavigationStack {
+                EditJobApplicationView(
+                    application: application,
+                    store: store
+                )
+            }
         }
         .alert(
             "Delete application?",

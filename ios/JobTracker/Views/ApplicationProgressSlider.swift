@@ -6,26 +6,38 @@
 import SwiftUI
 
 struct ApplicationProgressSlider: View {
-    // The parent owns this temporary value; the slider only updates its binding.
-    @Binding var progress: Double
+    @Binding var status: ApplicationStatusDTO
     let isEditable: Bool
 
-    private let stages = [
-        "Applied",
-        "Phone screen",
-        "Interviewing",
-        "Offer",
-        "Accepted"
+    private let stages: [(status: ApplicationStatusDTO, title: String)] = [
+        (.draft, "Draft"),
+        (.applied, "Applied"),
+        (.phoneScreen, "Phone screen"),
+        (.interviewing, "Interviewing"),
+        (.offer, "Offer"),
+        (.accepted, "Accepted"),
+        (.rejected, "Rejected"),
+        (.withdrawn, "Withdrawn")
     ]
 
     private var selectedIndex: Int {
-        min(max(Int(progress.rounded()), 0), stages.count - 1)
+        stages.firstIndex { $0.status == status } ?? 0
+    }
+
+    private var sliderValue: Binding<Double> {
+        Binding(
+            get: { Double(selectedIndex) },
+            set: { newValue in
+                let index = min(max(Int(newValue.rounded()), 0), stages.count - 1)
+                status = stages[index].status
+            }
+        )
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(stages[selectedIndex])
+                Text(stages[selectedIndex].title)
                     .font(.headline)
 
                 Spacer()
@@ -37,14 +49,14 @@ struct ApplicationProgressSlider: View {
 
             // Whole-number steps snap to the five stages; disabling prevents edits.
             Slider(
-                value: $progress,
+                value: sliderValue,
                 in: 0...Double(stages.count - 1),
                 step: 1
             )
             .tint(Color("AccentGreen"))
             .disabled(!isEditable)
             .accessibilityLabel("Application progress")
-            .accessibilityValue(stages[selectedIndex])
+            .accessibilityValue(stages[selectedIndex].title)
 
             HStack {
                 Text("Applied")
@@ -61,9 +73,9 @@ struct ApplicationProgressSlider: View {
 }
 
 #Preview {
-    @Previewable @State var progress = 2.0
+    @Previewable @State var status: ApplicationStatusDTO = .interviewing
 
-    ApplicationProgressSlider(progress: $progress, isEditable: true)
+    ApplicationProgressSlider(status: $status, isEditable: true)
         .padding()
         .background(Color("ScreenBackground"))
         .preferredColorScheme(.dark)
