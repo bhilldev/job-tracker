@@ -23,7 +23,9 @@ public class JobApplicationsController : ControllerBase
   public async Task<ActionResult<JobApplicationResponse>> CreateJobApplication(
       CreateJobApplicationRequest request)
   {
-    var result = await _service.CreateAsync(request);
+    // Temporary development user until authentication supplies the user ID.
+    var userId = 1;
+    var result = await _service.CreateAsync(userId, request);
 
     return CreatedAtAction(
         nameof(GetJobApplicationById),
@@ -34,7 +36,9 @@ public class JobApplicationsController : ControllerBase
   [HttpGet]
   public async Task<ActionResult<List<JobApplicationResponse>>> GetJobApplications()
   {
-    var applications = await _service.GetAllAsync();
+    // Temporary development user until authentication supplies the user ID.
+    var userId = 1;
+    var applications = await _service.GetAllAsync(userId);
 
     return Ok(applications);
   }
@@ -42,7 +46,9 @@ public class JobApplicationsController : ControllerBase
   [HttpGet("{id:int}")]
   public async Task<ActionResult<JobApplicationResponse>> GetJobApplicationById(int id)
   {
-    var result = await _service.GetByIdAsync(id);
+    // Temporary development user until authentication supplies the user ID.
+    var userId = 1;
+    var result = await _service.GetByIdAsync(id, userId);
 
     if (result == null)
     {

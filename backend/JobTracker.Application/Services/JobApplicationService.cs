@@ -14,12 +14,13 @@ public class JobApplicationService
         _context = context;
     }
 
-    public async Task<JobApplicationResponse> CreateAsync(CreateJobApplicationRequest request)
+    public async Task<JobApplicationResponse> CreateAsync(
+        int userId,
+        CreateJobApplicationRequest request)
     {
         var entity = new JobApplication
         {
-            // Temporary development user; match the delete endpoint.
-            UserId = 1,
+            UserId = userId,
             CompanyName = request.CompanyName,
             JobTitle = request.JobTitle,
             Status = request.Status,
@@ -45,11 +46,11 @@ public class JobApplicationService
         };
     }
 
-    public async Task<JobApplicationResponse?> GetByIdAsync(int id)
+    public async Task<JobApplicationResponse?> GetByIdAsync(int id, int userId)
     {
         var entity = await _context.JobApplications
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
 
         if (entity == null)
             return null;
@@ -66,10 +67,11 @@ public class JobApplicationService
         };
     }
 
-    public async Task<List<JobApplicationResponse>> GetAllAsync()
+    public async Task<List<JobApplicationResponse>> GetAllAsync(int userId)
     {
         return await _context.JobApplications
             .AsNoTracking()
+            .Where(application => application.UserId == userId)
             .OrderByDescending(application => application.AppliedAt)
             .ThenByDescending(application => application.Id)
             .Select(application => new JobApplicationResponse
